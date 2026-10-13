@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2019",
+    "esModuleInterop": true,
+    "types": ["jest", "node", "@testing-library/jest-dom"],
+    "noUnusedLocals": false,
+    "noImplicitReturns": false
+  },
+  "include": ["tests/**/*", "src/features/**/*", "src/pages/TrangChu/**/*", "jest.config.ts"]
+}

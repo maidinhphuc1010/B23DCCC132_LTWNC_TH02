@@ -1,6 +1,15 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Assignment, AssignmentStatus } from './types';
 import { calcDaysLeft, isOverdue } from './stats';
+
+export const useDebounce = <T,>(value: T, delay = 300): T => {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const timer = window.setTimeout(() => setDebounced(value), delay);
+    return () => window.clearTimeout(timer);
+  }, [value, delay]);
+  return debounced;
+};
 
 export const getDateDiff = calcDaysLeft;
 

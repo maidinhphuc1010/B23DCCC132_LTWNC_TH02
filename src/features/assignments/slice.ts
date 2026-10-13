@@ -31,6 +31,11 @@ const assignmentsSlice = createSlice({
     removeAssignment: (state, action: PayloadAction<string>) => {
       state.items = state.items.filter((item) => item.id !== action.payload);
     },
+    replaceAssignments: (state, action: PayloadAction<Assignment[]>) => {
+      state.items = action.payload;
+      state.status = 'succeeded';
+      state.error = undefined;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -40,5 +45,5 @@ const assignmentsSlice = createSlice({
   },
 });
 
-export const { addAssignment, updateAssignment, toggleAssignment, removeAssignment } = assignmentsSlice.actions;
+export const { addAssignment, updateAssignment, toggleAssignment, removeAssignment, replaceAssignments } = assignmentsSlice.actions;
 export default assignmentsSlice.reducer;

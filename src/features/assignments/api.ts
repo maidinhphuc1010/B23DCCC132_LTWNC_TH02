@@ -1,4 +1,5 @@
 import type { Assignment } from './types';
+import { generateSampleAssignments } from './generator';
 
 const sampleAssignments: Assignment[] = [
   { id: '1', subject: 'TypeScript', title: 'Xây dựng generic repository', dueDate: '2026-09-25', priority: 'high', completed: false },
@@ -9,5 +10,9 @@ const sampleAssignments: Assignment[] = [
 
 export const fetchAssignmentsApi = async (): Promise<Assignment[]> => {
   await new Promise((resolve) => setTimeout(resolve, 650));
+  // Explicit, reload-safe fixture for baseline measurements only.
+  if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('benchmark') === '10000') {
+    return generateSampleAssignments(10000);
+  }
   return sampleAssignments.map((assignment) => ({ ...assignment }));
 };

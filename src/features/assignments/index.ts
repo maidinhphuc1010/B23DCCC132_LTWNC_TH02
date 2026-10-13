@@ -1,3 +1,5 @@
+export * from './generator';
+
 export * from './types';
 export * from './slice';
 export * from './store';

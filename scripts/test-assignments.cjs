@@ -1,0 +1,44 @@
+const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
+const puppeteer = require(path.join(process.env.BASELINE_TOOLS, 'puppeteer-core'));
+(async () => {
+ const browser = await puppeteer.launch({ executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe', headless: true });
+ try {
+  const page = await browser.newPage();
+  page.setDefaultTimeout(60000);
+  await page.setViewport({width:1365,height:768});
+  await page.goto('http://localhost:8000/dashboard?benchmark=10000');
+  await page.waitForSelector('[data-total-count="10000"]');
+  const input = 'input[aria-label="Tìm kiếm bài tập"]';
+  assert(await page.$$eval('.assignment-card', els => els.length < 20));
+  await page.type(input, '10000', {delay:20});
+  assert.strictEqual(await page.$eval('[data-query]', el => el.dataset.query), '');
+  await page.waitForFunction(() => document.querySelector('[data-query]').dataset.query === '10000');
+  assert.strictEqual(await page.$eval('[data-result-count]', el => el.dataset.resultCount), '1');
+  assert((await page.$eval('.assignment-title', el => el.textContent)).includes('10000'));
+  await page.click('[aria-label="Sửa bài tập"]');
+  await page.waitForSelector('.ant-modal');
+  await page.click('.ant-modal-close');
+  await page.waitForSelector('.ant-modal', {hidden:true});
+  await page.click(input); await page.keyboard.down('Control'); await page.keyboard.press('A'); await page.keyboard.up('Control'); await page.keyboard.press('Backspace');
+  await page.waitForFunction(() => document.querySelector('[data-result-count]').dataset.resultCount === '10000');
+  await page.$eval('.virtual-assignment-list > div', el => {el.scrollTop = el.scrollHeight; el.dispatchEvent(new Event('scroll'));});
+  await page.waitForFunction(() => [...document.querySelectorAll('.assignment-title')].some(el => el.textContent.includes('10000')));
+  await page.evaluate(() => [...document.querySelectorAll('button')].find(el => el.textContent === 'Thống kê').click());
+  await page.waitForSelector('[data-testid="assignment-statistics"]');
+  const values = await page.$$eval('.ant-statistic-content-value', els => els.map(el => el.textContent));
+  assert.deepStrictEqual(values.slice(0,2), ['10,000','1,429']);
+  assert.strictEqual(await page.$$eval('.ant-table-tbody > tr', els => els.length),5);
+  await page.evaluate(() => [...document.querySelectorAll('button')].find(el => el.textContent === 'Danh sách').click());
+  await page.waitForSelector('[data-total-count="10000"]');
+  await page.setViewport({width:390,height:844});
+  await new Promise(r=>setTimeout(r,500));
+  assert(await page.$$eval('.assignment-card', els => els.length < 20));
+  await page.screenshot({path:'optimized-results/mobile.png'});
+  await page.goto('http://localhost:8000/dashboard');
+  await page.waitForSelector('[data-total-count="4"]');
+  fs.writeFileSync('optimized-results/functional-tests.json', JSON.stringify({passed:true,checks:['10000 logical items with <20 DOM cards','300ms debounce does not update immediately','search unique last item','edit modal opens and closes','scroll reaches last item','lazy statistics counts total/completed/5 subjects','return to list preserves data','mobile virtualization','normal route loads 4 items']},null,2));
+  console.log('PASS: 9 browser checks');
+ } finally {await browser.close();}
+})().catch(e=>{console.error(e);process.exitCode=1;});

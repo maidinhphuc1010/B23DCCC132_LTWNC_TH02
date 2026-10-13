@@ -1,0 +1,14 @@
+{
+  "passed": true,
+  "checks": [
+    "10000 logical items with <20 DOM cards",
+    "300ms debounce does not update immediately",
+    "search unique last item",
+    "edit modal opens and closes",
+    "scroll reaches last item",
+    "lazy statistics counts total/completed/5 subjects",
+    "return to list preserves data",
+    "mobile virtualization",
+    "normal route loads 4 items"
+  ]
+}

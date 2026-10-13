@@ -1,0 +1,16 @@
+[
+  {
+    "run": 1,
+    "cardsAfterAudit": null,
+    "score": 0.3,
+    "runtimeError": {
+      "code": "PROTOCOL_TIMEOUT",
+      "message": "Waiting for DevTools protocol response has exceeded the allotted time. (Method: CSS.startRuleUsageTracking)",
+      "errorStack": "LighthouseError: PROTOCOL_TIMEOUT\n    at file:///C:/Users/DELL/AppData/Local/npm-cache/_npx/ed05d372d6adb15e/node_modules/lighthouse/core/gather/session.js:121:47\n    at new Promise (<anonymous>)\n    at ProtocolSession.sendCommand (file:///C:/Users/DELL/AppData/Local/npm-cache/_npx/ed05d372d6adb15e/node_modules/lighthouse/core/gather/session.js:118:28)\n    at CSSUsage.getArtifact (file:///C:/Users/DELL/AppData/Local/npm-cache/_npx/ed05d372d6adb15e/node_modules/lighthouse/core/gather/gatherers/css-usage.js:29:19)\n    at async file:///C:/Users/DELL/AppData/Local/npm-cache/_npx/ed05d372d6adb15e/node_modules/lighthouse/core/gather/runner-helpers.js:106:24\n    at async collectPhaseArtifacts (file:///C:/Users/DELL/AppData/Local/npm-cache/_npx/ed05d372d6adb15e/node_modules/lighthouse/core/gather/runner-helpers.js:123:5)\n    at async _computeNavigationResult (file:///C:/Users/DELL/AppData/Local/npm-cache/_npx/ed05d372d6adb15e/node_modules/lighthouse/core/gather/navigation-runner.js:176:5)\n    at async gatherFn (file:///C:/Users/DELL/AppData/Local/npm-cache/_npx/ed05d372d6adb15e/node_modules/lighthouse/core/gather/navigation-runner.js:300:23)\n    at async Runner.gather (file:///C:/Users/DELL/AppData/Local/npm-cache/_npx/ed05d372d6adb15e/node_modules/lighthouse/core/runner.js:211:25)\n    at async navigationGather (file:///C:/Users/DELL/AppData/Local/npm-cache/_npx/ed05d372d6adb15e/node_modules/lighthouse/core/gather/navigation-runner.js:306:21)",
+      "artifactKey": "CSSUsage"
+    },
+    "warnings": [
+      "The page may not be loading as expected because your test URL (http://localhost:8001/dashboard?benchmark=10000) was redirected to http://localhost:8001/dashboard/?benchmark=10000. Try testing the second URL directly."
+    ]
+  }
+]

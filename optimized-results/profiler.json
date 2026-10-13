@@ -1,0 +1,167 @@
+{
+  "url": "http://localhost:8000/dashboard/?benchmark=10000",
+  "browser": "Chrome/155.0.8059.40",
+  "node": "v22.12.0",
+  "mode": "development React.Profiler + existing render-body counter",
+  "runs": [
+    {
+      "run": 1,
+      "query": "0",
+      "cards": 7,
+      "counter": "Baseline: AssignmentCard render ở lần gõ gần nhất: 0",
+      "commits": [
+        {
+          "id": "AssignmentList",
+          "phase": "update",
+          "actualDuration": 16.399999976158142,
+          "baseDuration": 99.40000104904175,
+          "startTime": 14353.299999952316,
+          "commitTime": 14370.5,
+          "cardRenderCount": 0
+        },
+        {
+          "id": "AssignmentList",
+          "phase": "update",
+          "actualDuration": 13.899999976158142,
+          "baseDuration": 96.70000100135803,
+          "startTime": 14374.799999952316,
+          "commitTime": 14388.899999976158,
+          "cardRenderCount": 0
+        },
+        {
+          "id": "AssignmentList",
+          "phase": "update",
+          "actualDuration": 102.70000004768372,
+          "baseDuration": 181.70000112056732,
+          "startTime": 14676.5,
+          "commitTime": 14781.699999928474,
+          "cardRenderCount": 0
+        },
+        {
+          "id": "AssignmentList",
+          "phase": "update",
+          "actualDuration": 0,
+          "baseDuration": 181.70000112056732,
+          "startTime": 14789.100000023842,
+          "commitTime": 14791.899999976158,
+          "cardRenderCount": 0
+        },
+        {
+          "id": "AssignmentList",
+          "phase": "update",
+          "actualDuration": 0,
+          "baseDuration": 181.70000112056732,
+          "startTime": 14946.799999952316,
+          "commitTime": 14948.399999976158,
+          "cardRenderCount": 0
+        }
+      ]
+    },
+    {
+      "run": 2,
+      "query": "0",
+      "cards": 7,
+      "counter": "Baseline: AssignmentCard render ở lần gõ gần nhất: 0",
+      "commits": [
+        {
+          "id": "AssignmentList",
+          "phase": "update",
+          "actualDuration": 15,
+          "baseDuration": 96.20000088214874,
+          "startTime": 18079.199999928474,
+          "commitTime": 18094.699999928474,
+          "cardRenderCount": 0
+        },
+        {
+          "id": "AssignmentList",
+          "phase": "update",
+          "actualDuration": 0,
+          "baseDuration": 96.20000088214874,
+          "startTime": 18095.699999928474,
+          "commitTime": 18096.299999952316,
+          "cardRenderCount": 0
+        },
+        {
+          "id": "AssignmentList",
+          "phase": "update",
+          "actualDuration": 66.49999988079071,
+          "baseDuration": 142.8000009059906,
+          "startTime": 18407.600000023842,
+          "commitTime": 18475.299999952316,
+          "cardRenderCount": 0
+        },
+        {
+          "id": "AssignmentList",
+          "phase": "update",
+          "actualDuration": 0.10000002384185791,
+          "baseDuration": 142.8000009059906,
+          "startTime": 18477.100000023842,
+          "commitTime": 18480.199999928474,
+          "cardRenderCount": 0
+        },
+        {
+          "id": "AssignmentList",
+          "phase": "update",
+          "actualDuration": 0,
+          "baseDuration": 142.8000009059906,
+          "startTime": 18638.399999976158,
+          "commitTime": 18638.699999928474,
+          "cardRenderCount": 0
+        }
+      ]
+    },
+    {
+      "run": 3,
+      "query": "0",
+      "cards": 7,
+      "counter": "Baseline: AssignmentCard render ở lần gõ gần nhất: 0",
+      "commits": [
+        {
+          "id": "AssignmentList",
+          "phase": "update",
+          "actualDuration": 20.199999928474426,
+          "baseDuration": 99.30000102519989,
+          "startTime": 21814.699999928474,
+          "commitTime": 21836.799999952316,
+          "cardRenderCount": 0
+        },
+        {
+          "id": "AssignmentList",
+          "phase": "update",
+          "actualDuration": 0,
+          "baseDuration": 99.30000102519989,
+          "startTime": 21840.199999928474,
+          "commitTime": 21840.5,
+          "cardRenderCount": 0
+        },
+        {
+          "id": "AssignmentList",
+          "phase": "update",
+          "actualDuration": 62.60000002384186,
+          "baseDuration": 141.70000100135803,
+          "startTime": 22154.799999952316,
+          "commitTime": 22219.600000023842,
+          "cardRenderCount": 0
+        },
+        {
+          "id": "AssignmentList",
+          "phase": "update",
+          "actualDuration": 0,
+          "baseDuration": 141.70000100135803,
+          "startTime": 22224,
+          "commitTime": 22226,
+          "cardRenderCount": 0
+        },
+        {
+          "id": "AssignmentList",
+          "phase": "update",
+          "actualDuration": 0,
+          "baseDuration": 141.70000100135803,
+          "startTime": 22378.899999976158,
+          "commitTime": 22379.199999928474,
+          "cardRenderCount": 0
+        }
+      ]
+    }
+  ]
+}

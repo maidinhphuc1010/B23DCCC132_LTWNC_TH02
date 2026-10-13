@@ -2,14 +2,22 @@
 import { BulbOutlined, DeleteOutlined, EditOutlined, PushpinFilled, PushpinOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons';
 import { Button, Card, Empty, Form, Input, Modal, Select, Space, Spin, Tag, Typography, message } from 'antd';
 import { Provider } from 'react-redux';
-import { memo, useEffect, useState } from 'react';
+import { lazy, memo, Profiler, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { FixedSizeList } from 'react-window';
+import type { ListChildComponentProps } from 'react-window';
+import { useDebounce } from '@/features/assignments/hooks';
+
+const AssignmentStatistics = lazy(() => import('./Statistics'));
 import {
 	addAssignment,
 	updateAssignment,
+	generateSampleAssignments,
 	fetchAssignments,
+
 	getDateDiff,
 	priorityLabels,
 	removeAssignment,
+	replaceAssignments,
 	store,
 	toggleAssignment,
 	useAppDispatch,
@@ -23,6 +31,9 @@ import type { Assignment, AssignmentStatus, NewAssignment, Priority } from '@/fe
 import './style.less';
 
 const { Title, Text } = Typography;
+
+let assignmentCardRenderCount = 0;
+
 
 const ThemeToggle = () => {
 	const { mode, toggleTheme } = useTheme();
@@ -55,7 +66,7 @@ const AssignmentFilters = ({
 	</div>
 );
 
-const AssignmentForm = ({ assignment, onClose }: { assignment?: Assignment; onClose: () => void }) => {
+export const AssignmentForm = ({ assignment, onClose }: { assignment?: Assignment; onClose: () => void }) => {
 	const [form] = Form.useForm<NewAssignment>();
 	const dispatch = useAppDispatch();
 	const isEditing = Boolean(assignment);
@@ -113,12 +124,67 @@ const AddAssignmentButton = () => {
 	);
 };
 
-const AssignmentList = () => {
+const StressTestButton = () => {
 	const dispatch = useAppDispatch();
+	const [loading, setLoading] = useState(false);
+	const createSamples = () => {
+		Modal.confirm({
+			title: 'Tạo 10.000 bài tập mẫu?',
+			content: 'Danh sách hiện tại sẽ được thay thế để đo hiệu năng baseline.',
+			okText: 'Tạo dữ liệu', cancelText: 'Hủy',
+			onOk: () => {
+				setLoading(true);
+				window.requestAnimationFrame(() => {
+					dispatch(replaceAssignments(generateSampleAssignments()));
+					setLoading(false);
+					message.success('Đã tạo 10.000 bài tập mẫu');
+				});
+			},
+		});
+	};
+	return <Button icon={<ReloadOutlined />} loading={loading} onClick={createSamples}>Tạo 10.000 bài tập mẫu</Button>;
+};
+
+export const AssignmentList = () => {
+
+	const dispatch = useAppDispatch();
+	const [query, setQuery] = useState('');
+	const [renderCount, setRenderCount] = useState(0);
 	const { items, status, error } = useAppSelector((state) => state.assignments);
-	const { status: filter, setStatus, filteredAssignments } = useAssignmentFilters(items);
+
+	const debouncedQuery = useDebounce(query, 300);
+	const { status: filter, setStatus, filteredAssignments } = useAssignmentFilters(items, debouncedQuery);
 	const pinnedIds = usePinStore((state) => state.pinnedIds);
-	const orderedAssignments = [...filteredAssignments].sort((left, right) => Number(pinnedIds.includes(right.id)) - Number(pinnedIds.includes(left.id)));
+	const orderedAssignments = useMemo(() => {
+		const pinned = new Set(pinnedIds);
+		return [...filteredAssignments].sort((left, right) => Number(pinned.has(right.id)) - Number(pinned.has(left.id)));
+	}, [filteredAssignments, pinnedIds]);
+	const togglePin = usePinStore((state) => state.togglePin);
+	const onToggle = useCallback((id: string) => { dispatch(toggleAssignment(id)); }, [dispatch]);
+	const onRemove = useCallback((id: string) => { dispatch(removeAssignment(id)); }, [dispatch]);
+	const [editing, setEditing] = useState<Assignment>();
+	const onEdit = useCallback((assignment: Assignment) => setEditing(assignment), []);
+	const closeEdit = useCallback(() => setEditing(undefined), []);
+	const rowData = useMemo(() => ({ items: orderedAssignments, onToggle, onRemove, onPin: togglePin, onEdit }), [orderedAssignments, onToggle, onRemove, togglePin, onEdit]);
+	const listRef = useRef<FixedSizeList>(null);
+	const [compact, setCompact] = useState(() => window.innerWidth <= 1100);
+	useEffect(() => {
+		const media = window.matchMedia('(max-width: 1100px)');
+		const update = () => setCompact(media.matches);
+		media.addEventListener('change', update);
+		return () => media.removeEventListener('change', update);
+	}, []);
+	useEffect(() => { listRef.current?.scrollToItem(0); }, [debouncedQuery, filter]);
+	const handleSearch = (value: string) => {
+		assignmentCardRenderCount = 0;
+		setQuery(value);
+	};
+	useEffect(() => {
+		if (items.length === 10000) {
+			setRenderCount(assignmentCardRenderCount);
+			console.info(`[Stress test] AssignmentCard render khi tìm kiếm "${query}": ${assignmentCardRenderCount}`);
+		}
+	}, [query, debouncedQuery, items.length]);
 	useEffect(() => {
 		if (status === 'idle') dispatch(fetchAssignments());
 	}, [dispatch, status]);
@@ -132,6 +198,13 @@ const AssignmentList = () => {
 					<Text type='secondary'>Theo dõi tiến độ học tập của bạn</Text>
 				</div>
 				<Space>
+					<Input
+						allowClear
+						aria-label='Tìm kiếm bài tập'
+						placeholder='Tìm môn học hoặc bài tập'
+						value={query}
+						onChange={(event) => handleSearch(event.target.value)}
+					/>
 					<AssignmentFilters value={filter} onChange={setStatus} />
 					<Button icon={<ReloadOutlined />} onClick={() => dispatch(fetchAssignments())}>
 						Tải lại
@@ -144,21 +217,37 @@ const AssignmentList = () => {
 				</div>
 			)}
 			{error && <Text type='danger'>{error}</Text>}
+			{items.length === 10000 && <Text className='stress-render-count' type='secondary'>Baseline: AssignmentCard render ở lần gõ gần nhất: {renderCount}</Text>}
 			{status !== 'loading' && orderedAssignments.length === 0 && <Empty description='Không có bài tập phù hợp' />}
-			<div className='assignment-list'>
-				{orderedAssignments.map((assignment) => (
-					<AssignmentCard key={assignment.id} assignment={assignment} />
-				))}
+			<div className='assignment-list virtual-assignment-list' data-total-count={items.length} data-result-count={orderedAssignments.length} data-query={debouncedQuery}>
+				<FixedSizeList ref={listRef} height={600} width='100%' itemCount={orderedAssignments.length}
+					itemSize={compact ? 310 : 180} itemData={rowData} itemKey={assignmentRowKey} overscanCount={3}>
+					{AssignmentRow}
+				</FixedSizeList>
 			</div>
+			<Modal title='Sửa bài tập' visible={Boolean(editing)} onCancel={closeEdit} footer={null} destroyOnClose>
+				{editing && <AssignmentForm assignment={editing} onClose={closeEdit} />}
+			</Modal>
 		</>
 	);
 };
 
-const AssignmentCard = memo(({ assignment }: { assignment: Assignment }) => {
-	const dispatch = useAppDispatch();
-	const togglePin = usePinStore((state) => state.togglePin);
+interface CardActions {
+	onToggle: (id: string) => void;
+	onRemove: (id: string) => void;
+	onPin: (id: string) => void;
+	onEdit: (assignment: Assignment) => void;
+}
+interface AssignmentRowData extends CardActions { items: Assignment[] }
+const assignmentRowKey = (index: number, data: AssignmentRowData) => data.items[index].id;
+const AssignmentRow = ({ index, style, data }: ListChildComponentProps<AssignmentRowData>) => (
+	<div style={style} className='assignment-virtual-row'>
+		<AssignmentCard assignment={data.items[index]} onToggle={data.onToggle} onRemove={data.onRemove} onPin={data.onPin} onEdit={data.onEdit} />
+	</div>
+);
+export const AssignmentCard = memo(({ assignment, onToggle, onRemove, onPin, onEdit }: { assignment: Assignment } & CardActions) => {
+	assignmentCardRenderCount += 1;
 	const pinned = usePinStore((state) => state.pinnedIds.includes(assignment.id));
-	const [editing, setEditing] = useState(false);
 	const days = getDateDiff(assignment.dueDate);
 	const overdue = !assignment.completed && days < 0;
 	const confirmToggle = () => {
@@ -166,14 +255,14 @@ const AssignmentCard = memo(({ assignment }: { assignment: Assignment }) => {
 			title: assignment.completed ? 'Bỏ hoàn thành bài tập?' : 'Đánh dấu bài tập đã hoàn thành?',
 			content: assignment.completed ? `Bạn có chắc muốn bỏ trạng thái hoàn thành của “${assignment.title}”?` : `Bạn có chắc “${assignment.title}” đã hoàn thành?`,
 			okText: 'Xác nhận', cancelText: 'Hủy', okButtonProps: { danger: false },
-			onOk: () => dispatch(toggleAssignment(assignment.id)),
+			onOk: () => onToggle(assignment.id),
 		});
 	};
 	const confirmRemove = () => {
 		Modal.confirm({
 			title: 'Xóa bài tập?', content: `Bạn có chắc muốn xóa “${assignment.title}”? Hành động này không thể hoàn tác.`,
 			okText: 'Xóa', cancelText: 'Hủy', okButtonProps: { danger: true },
-			onOk: () => dispatch(removeAssignment(assignment.id)),
+			onOk: () => onRemove(assignment.id),
 		});
 	};
 	return (
@@ -188,12 +277,12 @@ const AssignmentCard = memo(({ assignment }: { assignment: Assignment }) => {
 				<Text className={overdue ? 'overdue' : assignment.completed ? 'done' : 'remaining'}>{assignment.completed ? 'Đã hoàn thành' : overdue ? `Quá hạn ${Math.abs(days)} ngày` : `Còn ${days} ngày`}</Text>
 			</div>
 			<Space>
-				<Button size='small' icon={pinned ? <PushpinFilled /> : <PushpinOutlined />} aria-label={pinned ? 'Bỏ ghim bài tập' : 'Ghim bài tập'} onClick={() => togglePin(assignment.id)} />
+				<Button size='small' icon={pinned ? <PushpinFilled /> : <PushpinOutlined />} aria-label={pinned ? 'Bỏ ghim bài tập' : 'Ghim bài tập'} onClick={() => onPin(assignment.id)} />
 				<Button size='small' type={assignment.completed ? 'default' : 'primary'} onClick={confirmToggle}>{assignment.completed ? 'Bỏ hoàn thành' : 'Hoàn thành'}</Button>
-				<Button size='small' icon={<EditOutlined />} aria-label='Sửa bài tập' onClick={() => setEditing(true)} />
+				<Button size='small' icon={<EditOutlined />} aria-label='Sửa bài tập' onClick={() => onEdit(assignment)} />
 				<Button danger type='text' icon={<DeleteOutlined />} aria-label='Xóa bài tập' onClick={confirmRemove} />
 			</Space>
-			<Modal title='Sửa bài tập' visible={editing} onCancel={() => setEditing(false)} footer={null} destroyOnClose><AssignmentForm assignment={assignment} onClose={() => setEditing(false)} /></Modal>
+
 		</Card>
 	);
 });
@@ -207,6 +296,7 @@ const Dashboard = () => (
 	</Provider>
 );
 const DashboardContent = () => {
+	const [showStatistics, setShowStatistics] = useState(false);
 	const completed = useAppSelector((state) => state.assignments.items.filter((item) => item.completed).length);
 	return (
 		<div className='assignment-page'>
@@ -223,9 +313,18 @@ const DashboardContent = () => {
 			</div>
 			<div className='assignment-actions'>
 				<ThemeToggle />
+				<Button onClick={() => setShowStatistics((value) => !value)}>{showStatistics ? 'Danh sách' : 'Thống kê'}</Button>
+				<StressTestButton />
 				<AddAssignmentButton />
 			</div>
-			<AssignmentList />
+			{showStatistics ? <Suspense fallback={<Spin tip='Đang tải thống kê...' />}><AssignmentStatistics /></Suspense> : process.env.NODE_ENV === 'development' && new URLSearchParams(window.location.search).get('benchmark') === '10000' ? (
+				<Profiler id='AssignmentList' onRender={(id, phase, actualDuration, baseDuration, startTime, commitTime) => {
+					window.dispatchEvent(new CustomEvent('assignment-profiler', { detail: {
+						id, phase, actualDuration, baseDuration, startTime, commitTime,
+						cardRenderCount: assignmentCardRenderCount,
+					} }));
+				}}><AssignmentList /></Profiler>
+			) : <AssignmentList />}
 		</div>
 	);
 };

@@ -1,3 +1,23 @@
+
+// Fixed-size rows: truncate long titles rather than allowing overlapping rows.
+.virtual-assignment-list { display: block; }
+.assignment-virtual-row { padding: 4px 4px 14px; }
+.assignment-virtual-row .assignment-card { height: 100%; }
+.assignment-virtual-row .assignment-title,
+.assignment-virtual-row .assignment-subject {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 1100px) {
+  .assignment-virtual-row .ant-card-body { flex-direction: column; align-items: stretch; gap: 12px; padding: 18px; }
+  .assignment-virtual-row .assignment-main { flex-basis: auto; }
+  .assignment-virtual-row .assignment-meta { justify-content: flex-start; min-width: 0; border: 0; padding: 0; }
+  .assignment-virtual-row .ant-card-body > .ant-space { margin-left: 0; }
+  .assignment-actions { flex-wrap: wrap; }
+}
+
 .assignment-theme {
 	min-height: 100%;
 	transition: background-color 0.2s ease, color 0.2s ease;
@@ -95,6 +115,10 @@
 }
 .assignment-filters .ant-select {
 	min-width: 170px;
+}
+.stress-render-count {
+	display: block;
+	margin-bottom: 12px;
 }
 .assignment-list {
 	display: grid;
