@@ -1,19 +1,23 @@
 import { useMemo, useState } from 'react';
 import type { Assignment, AssignmentStatus } from './types';
+import { calcDaysLeft, isOverdue } from './stats';
 
-export const getDateDiff = (dueDate: string, today = new Date()): number => {
-  const due = new Date(`${dueDate}T23:59:59`);
-  return Math.ceil((due.getTime() - today.getTime()) / 86400000);
-};
+export const getDateDiff = calcDaysLeft;
 
-export const useAssignmentFilters = (assignments: Assignment[]) => {
+export const useAssignmentFilters = (assignments: Assignment[], query = '') => {
   const [status, setStatus] = useState<AssignmentStatus>('all');
-  const filteredAssignments = useMemo(() => assignments.filter((assignment) => {
-    const overdue = !assignment.completed && getDateDiff(assignment.dueDate) < 0;
-    if (status === 'completed') return assignment.completed;
-    if (status === 'pending') return !assignment.completed && !overdue;
-    if (status === 'overdue') return overdue;
-    return true;
-  }), [assignments, status]);
+  const filteredAssignments = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    return assignments.filter((assignment) => {
+      const overdue = isOverdue(assignment);
+      const matchesQuery = !normalizedQuery || `${assignment.subject} ${assignment.title}`.toLowerCase().includes(normalizedQuery);
+      if (!matchesQuery) return false;
+      if (status === 'completed') return assignment.completed;
+      if (status === 'pending') return !assignment.completed && !overdue;
+      if (status === 'overdue') return overdue;
+      return true;
+    });
+  }, [assignments, query, status]);
   return { status, setStatus, filteredAssignments };
 };
+

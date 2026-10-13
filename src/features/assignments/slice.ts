@@ -1,5 +1,5 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { fetchAssignmentsApi } from './api';
 import type { Assignment, NewAssignment } from './types';
 
@@ -20,6 +20,10 @@ const assignmentsSlice = createSlice({
     addAssignment: (state, action: PayloadAction<NewAssignment>) => {
       state.items.unshift({ ...action.payload, id: `${Date.now()}`, completed: false });
     },
+    updateAssignment: (state, action: PayloadAction<{ id: string; changes: NewAssignment }>) => {
+      const assignment = state.items.find((item) => item.id === action.payload.id);
+      if (assignment) Object.assign(assignment, action.payload.changes);
+    },
     toggleAssignment: (state, action: PayloadAction<string>) => {
       const assignment = state.items.find((item) => item.id === action.payload);
       if (assignment) assignment.completed = !assignment.completed;
@@ -36,5 +40,5 @@ const assignmentsSlice = createSlice({
   },
 });
 
-export const { addAssignment, toggleAssignment, removeAssignment } = assignmentsSlice.actions;
+export const { addAssignment, updateAssignment, toggleAssignment, removeAssignment } = assignmentsSlice.actions;
 export default assignmentsSlice.reducer;

@@ -1,3 +1,22 @@
+.assignment-theme {
+	min-height: 100%;
+	transition: background-color 0.2s ease, color 0.2s ease;
+}
+.assignment-theme.theme-dark {
+	background: #101a24;
+}
+.theme-dark .assignment-page { color: #e6edf3; }
+.theme-dark .assignment-card { background: #182632; border-color: #2b414d; }
+.theme-dark .assignment-title { color: #e6edf3; }
+.theme-dark .assignment-main .ant-typography-secondary { color: #aebdc7; }
+.theme-dark .assignment-subject { background: #1d454b; color: #9ce5e2; }
+.theme-dark .assignment-meta { border-color: #30434d; }
+.assignment-actions { gap: 10px; }
+.assignment-theme .assignment-card.is-pinned { border-color: #f0b429; }
+.theme-dark .list-toolbar .ant-typography,
+.theme-dark .assignment-filters .ant-typography,
+.theme-dark .ant-empty-description { color: #e6edf3; }
+.theme-dark .assignment-card.is-completed { background: #182632; }
 .assignment-page {
 	max-width: 1180px;
 	margin: 0 auto;
